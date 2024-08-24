@@ -2,12 +2,12 @@
 //// outputs in a transaction containing an address or a datum.
 ////
 
-use aiken/list
+use aiken/collection/list
+use assist/addresses
 // for testing only
 use assist/tests/fake_tx
-use aiken/transaction.{DatumHash, InlineDatum, Input, Output, Transaction}
-use aiken/transaction/credential.{Address, ScriptCredential}
-use assist/addresses
+use cardano/credential.{Address, Script}
+use cardano/transaction.{DatumHash, InlineDatum, Input, Output, Transaction}
 
 /// Verify that the number of inputs with an inline datum or datum hash is equal to the
 /// number intended in the contract. The amount must be exactly the counter.
@@ -81,7 +81,7 @@ fn do_inputs_by_vkh(inputs: List<Input>, counter: Int) -> Int {
     [input, ..rest] ->
       // exact address match
       when input.output.address.payment_credential is {
-        ScriptCredential(_) -> do_inputs_by_vkh(rest, counter + 1)
+        Script(_) -> do_inputs_by_vkh(rest, counter + 1)
         _ -> do_inputs_by_vkh(rest, counter)
       }
     [] -> counter
@@ -113,7 +113,7 @@ fn do_outputs_by_vkh(outputs: List<Output>, counter: Int) -> Int {
     [output, ..rest] ->
       // exact address match
       when output.address.payment_credential is {
-        ScriptCredential(_) -> do_outputs_by_vkh(rest, counter + 1)
+        Script(_) -> do_outputs_by_vkh(rest, counter + 1)
         _ -> do_outputs_by_vkh(rest, counter)
       }
     [] -> counter
@@ -306,9 +306,9 @@ pub fn single_input_with_bypass(
 
 fn vkh_addr_eq(a: Address, b: Address) -> Bool {
   when a.payment_credential is {
-    ScriptCredential(avkh) ->
+    Script(avkh) ->
       when b.payment_credential is {
-        ScriptCredential(bvkh) -> avkh == bvkh
+        Script(bvkh) -> avkh == bvkh
         _ -> False
       }
     _ -> False

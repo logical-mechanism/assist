@@ -2,8 +2,8 @@
 //// ensuring their correctness. 
 ////
 
-use aiken/transaction/credential.{Inline, ScriptCredential, StakeCredential}
 use assist/types/hashes.{ValidatorHash}
+use cardano/credential.{Inline, Script, StakeCredential}
 
 /// Creates a stake credential from the hex encoding of a stake key.
 /// This can be used to find the reward amount from the withdrawals 
@@ -13,10 +13,9 @@ use assist/types/hashes.{ValidatorHash}
 /// credentials.create_stake_credential(datum.contract_hash)
 /// ```
 pub fn create_stake_credential(sc: ValidatorHash) -> StakeCredential {
-  Inline(ScriptCredential(sc))
-  // ScriptCredential(sc)
+  Inline(Script(sc))
 }
 
 test simple_stake_credential() {
-  create_stake_credential(#"") == Inline(ScriptCredential(#""))
+  create_stake_credential(#"") == Inline(Script(#""))
 }

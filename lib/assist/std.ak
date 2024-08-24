@@ -3,9 +3,9 @@
 ////
 
 use aiken/builtin.{serialise_data}
-use aiken/transaction.{OutputReference, TransactionId}
 // used for testing
 use assist/tests/fake_tx
+use cardano/transaction.{OutputReference, TransactionId}
 
 /// Create an `OutputReference` from the `TxId#Idx` information. This is useful
 /// for building correct output references of specific UTxOs. It can be combined
@@ -15,8 +15,7 @@ use assist/tests/fake_tx
 /// std.out_ref(that_tx_id, that_tx_idx)
 /// ```
 pub fn out_ref(tx_id_hash: ByteArray, idx: Int) -> OutputReference {
-  let tx_id: TransactionId = TransactionId { hash: tx_id_hash }
-  OutputReference { transaction_id: tx_id, output_index: idx }
+  OutputReference { transaction_id: tx_id_hash, output_index: idx }
 }
 
 test correct_out_ref() {
@@ -31,12 +30,12 @@ test bad_out_ref() {
 
 test data_structure() {
   // this can be anything in aiken
-  let tx_id: TransactionId = TransactionId { hash: #"" }
+  let tx_id: TransactionId = #""
   let test_data_structure =
     OutputReference { transaction_id: tx_id, output_index: 0 }
   // now show the cbor
   let cbor_representation =
     test_data_structure
       |> serialise_data
-  cbor_representation == #"d8799fd8799f40ff00ff"
+  cbor_representation == #"d8799f4000ff"
 }

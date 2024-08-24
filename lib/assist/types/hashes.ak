@@ -1,6 +1,6 @@
 use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
-use aiken/transaction.{Transaction}
-use aiken/transaction/credential.{Script, VerificationKey}
+use cardano/credential.{Script, VerificationKey}
+use cardano/transaction.{Transaction}
 
 /// The public key hash, vkey, of an wallet address. Expected to be length 56 and
 /// is network agnostic. This is a non-smart contract hash. 

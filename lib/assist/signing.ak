@@ -2,7 +2,7 @@
 //// It assumes that all signatures provided are verification keys.
 ////
 
-use aiken/list
+use aiken/collection/list
 // for testing only
 use assist/tests/fake_tx
 use assist/types/hashes.{PublicKeyHash}

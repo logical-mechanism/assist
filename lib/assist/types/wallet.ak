@@ -1,5 +1,5 @@
-use aiken/bytearray
-use aiken/list
+use aiken/collection/list
+use aiken/primitive/bytearray
 use assist/types/hashes.{PublicKeyHash}
 
 /// A wallet type for a non-smart contract address.

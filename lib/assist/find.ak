@@ -2,21 +2,19 @@
 //// a validating transaction.
 ////
 
-use aiken/list
-use aiken/pairs
-use aiken/transaction.{
-  InlineDatum, Input, Output, OutputReference, Redeemer, ScriptPurpose, Spend,
-  Transaction, TransactionId,
-}
-use aiken/transaction/credential.{
-  Address, Inline, StakeCredential, VerificationKeyCredential,
-}
-use aiken/transaction/value.{AssetName, Lovelace, PolicyId, Value}
+use aiken/collection/list
+use aiken/collection/pairs
 use assist/addresses
 use assist/data
 // for testing only
 use assist/tests/fake_tx
 use assist/values
+use cardano/assets.{AssetName, Lovelace, PolicyId, Value}
+use cardano/credential.{Address, Credential, VerificationKey}
+use cardano/transaction.{
+  InlineDatum, Input, Output, OutputReference, Redeemer, ScriptPurpose, Spend,
+  Transaction,
+}
 
 /// Find the first input's output reference index.
 /// Output references have the form `TxId#Idx`, this function
@@ -53,7 +51,7 @@ test cant_find_first_input_index() fail {
 /// ```
 pub fn first_input_txid(inputs: List<Input>) -> ByteArray {
   when list.head(inputs) is {
-    Some(input) -> input.output_reference.transaction_id.hash
+    Some(input) -> input.output_reference.transaction_id
     None -> fail @"No First Input TxId Found"
   }
 }
@@ -92,10 +90,7 @@ pub fn input_by_ref(inputs: List<Input>, out_ref: OutputReference) -> Input {
 test find_input_by_ref() {
   let inputs: List<Input> = fake_tx.test_tx().inputs
   let out_ref: OutputReference =
-    OutputReference {
-      transaction_id: TransactionId { hash: #"acab" },
-      output_index: 0,
-    }
+    OutputReference { transaction_id: #"acab", output_index: 0 }
   input_by_ref(inputs, out_ref) == fake_tx.test_input()
 }
 
@@ -103,10 +98,7 @@ test cant_find_input_by_ref() fail {
   let inputs: List<Input> =
     []
   let out_ref: OutputReference =
-    OutputReference {
-      transaction_id: TransactionId { hash: #"" },
-      output_index: 0,
-    }
+    OutputReference { transaction_id: #"", output_index: 0 }
   // this will fail
   input_by_ref(inputs, out_ref) == fake_tx.test_input()
 }
@@ -265,14 +257,14 @@ pub fn output_by_addr_value(
 test find_output_by_addr_value() {
   let outputs: List<Output> = fake_tx.test_tx().outputs
   let addr: Address = addresses.create_address(#"acab", #"")
-  let value: Value = value.from_asset(#"acab", #"beef", 40)
+  let value: Value = assets.from_asset(#"acab", #"beef", 40)
   output_by_addr_value(outputs, addr, value) == fake_tx.test_output()
 }
 
 test find_just_enough_output_by_addr_value() {
   let outputs: List<Output> = fake_tx.test_tx().outputs
   let addr: Address = addresses.create_address(#"acab", #"")
-  let value: Value = value.from_asset(#"acab", #"beef", 20)
+  let value: Value = assets.from_asset(#"acab", #"beef", 20)
   output_by_addr_value(outputs, addr, value) == fake_tx.test_output()
 }
 
@@ -280,13 +272,13 @@ test cant_find_output_by_addr_value() fail {
   let outputs: List<Output> =
     []
   let addr: Address = addresses.create_address(#"acab", #"")
-  let value: Value = value.from_asset(#"acab", #"beef", 40)
+  let value: Value = assets.from_asset(#"acab", #"beef", 40)
   // this will fail
   output_by_addr_value(outputs, addr, value) == fake_tx.test_output()
 }
 
 /// Return the first occurrence of an output that contains at least some specific
-/// value. If nothing is found then error. This function
+/// assets. If nothing is found then error. This function
 /// does not search for an exact UTxO match.
 ///
 /// ```aiken
@@ -307,14 +299,14 @@ pub fn output_by_value(outputs: List<Output>, value: Value) -> Output {
 
 test find_output_by_value() {
   let outputs: List<Output> = fake_tx.test_tx().outputs
-  let value: Value = value.from_asset(#"acab", #"beef", 10)
+  let value: Value = assets.from_asset(#"acab", #"beef", 10)
   output_by_value(outputs, value) == fake_tx.test_output()
 }
 
 test cant_find_output_by_value() fail {
   let outputs: List<Output> =
     []
-  let value: Value = value.from_asset(#"acab", #"beef", 10)
+  let value: Value = assets.from_asset(#"acab", #"beef", 10)
   // this will fail
   output_by_value(outputs, value) == fake_tx.test_output()
 }
@@ -327,8 +319,8 @@ test cant_find_output_by_value() fail {
 /// find.stake_reward_by_sc(tx.withdrawals, datum.wallet.sc)
 /// ```
 pub fn stake_reward_by_sc(
-  withdraws: Pairs<StakeCredential, Lovelace>,
-  stake_credential: StakeCredential,
+  withdraws: Pairs<Credential, Lovelace>,
+  stake_credential: Credential,
 ) -> Int {
   when pairs.get_first(withdraws, stake_credential) is {
     Some(reward) -> reward
@@ -337,15 +329,15 @@ pub fn stake_reward_by_sc(
 }
 
 test find_stake_reward_by_sc() {
-  let withdrawal: Pairs<StakeCredential, Int> = fake_tx.test_tx().withdrawals
-  let sc: StakeCredential = Inline(VerificationKeyCredential(#"acab"))
+  let withdrawal: Pairs<Credential, Int> = fake_tx.test_tx().withdrawals
+  let sc: Credential = VerificationKey(#"acab")
   stake_reward_by_sc(withdrawal, sc) == 100
 }
 
 test cant_find_stake_reward_by_sc() fail {
-  let withdrawal: Pairs<StakeCredential, Int> =
+  let withdrawal: Pairs<Credential, Int> =
     []
-  let sc: StakeCredential = Inline(VerificationKeyCredential(#"acab"))
+  let sc: Credential = VerificationKey(#"acab")
   // this will fail
   stake_reward_by_sc(withdrawal, sc) == 0
 }

@@ -4,11 +4,11 @@
 //// instead of building out the value type directly which could be harmful.
 ////
 
-use aiken/dict
-use aiken/list
-use aiken/transaction/value.{AssetName, PolicyId, Value}
+use aiken/collection/dict
+use aiken/collection/list
+use cardano/assets.{AssetName, PolicyId, Value}
 
-/// A token type for a safe single policy id and asset name value.
+/// A token type for a safe single policy id and asset name assets.
 pub type Token {
   pid: PolicyId,
   tkn: AssetName,
@@ -181,23 +181,23 @@ test everything_is_positive_but_one() {
 /// add_token_to_value(token, this_value)
 /// ```
 pub fn add_token_to_value(the_value: Value, token: Token) -> Value {
-  value.add(the_value, token.pid, token.tkn, token.amt)
+  assets.add(the_value, token.pid, token.tkn, token.amt)
 }
 
 test add_empty_token_to_value() {
-  let zero: Value = value.zero()
+  let zero: Value = assets.zero()
   let token: Token = Token { pid: #"", tkn: #"", amt: 0 }
   add_token_to_value(zero, token) == zero
 }
 
 test add_ada_token_to_value() {
-  let zero: Value = value.zero()
+  let zero: Value = assets.zero()
   let token: Token = Token { pid: #"", tkn: #"", amt: 10 }
-  add_token_to_value(zero, token) == value.from_lovelace(10)
+  add_token_to_value(zero, token) == assets.from_lovelace(10)
 }
 
 test add_and_subtract_token_to_value() {
-  let zero: Value = value.zero()
+  let zero: Value = assets.zero()
   let token1: Token = Token { pid: #"", tkn: #"", amt: 10 }
   let token2: Token = Token { pid: #"", tkn: #"", amt: -10 }
   let expected: Value =
@@ -223,32 +223,32 @@ pub fn add_tokens_to_value(the_value: Value, tokens: Tokens) -> Value {
 }
 
 test add_empty_tokens_to_value() {
-  let zero: Value = value.zero()
+  let zero: Value = assets.zero()
   let token: Token = Token { pid: #"", tkn: #"", amt: 0 }
   add_tokens_to_value(zero, [token, token, token]) == zero
 }
 
 test add_ada_tokens_to_value() {
-  let zero: Value = value.zero()
+  let zero: Value = assets.zero()
   let token: Token = Token { pid: #"", tkn: #"", amt: 10 }
-  add_tokens_to_value(zero, [token, token, token]) == value.from_lovelace(30)
+  add_tokens_to_value(zero, [token, token, token]) == assets.from_lovelace(30)
 }
 
 test add_and_subtract_tokens_to_value() {
-  let zero: Value = value.zero()
+  let zero: Value = assets.zero()
   let token1: Token = Token { pid: #"", tkn: #"", amt: 10 }
   let token2: Token = Token { pid: #"", tkn: #"", amt: -10 }
   add_tokens_to_value(zero, [token1, token2]) == zero
 }
 
 /// Convert a value into a list of tokens. This conversation is a fast way
-/// to be able to do multiplication on a value.
+/// to be able to do multiplication on a assets.
 ///
 /// ```aiken
 /// token.from_value(this_value)
 /// ```
 pub fn from_value(v: Value) -> Tokens {
-  value.to_dict(v)
+  assets.to_dict(v)
     |> dict.foldl(
         [],
         fn(pid, assets, tokens) {
@@ -262,25 +262,25 @@ pub fn from_value(v: Value) -> Tokens {
 }
 
 test from_zero_value() {
-  let v: Value = value.zero()
+  let v: Value = assets.zero()
   let e: Tokens =
     []
   from_value(v) == e
 }
 
 test from_lovelace_value() {
-  let v: Value = value.from_lovelace(123)
+  let v: Value = assets.from_lovelace(123)
   let e: Tokens =
-    [Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 123 }]
+    [Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 123 }]
   from_value(v) == e
 }
 
 test from_general_value() {
-  let v: Value = value.from_lovelace(123) |> value.add(#"acab", #"cafe", 41)
+  let v: Value = assets.from_lovelace(123) |> assets.add(#"acab", #"cafe", 41)
   let e: Tokens =
     [
       Token { pid: #"acab", tkn: #"cafe", amt: 41 },
-      Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 123 },
+      Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 123 },
     ]
   from_value(v) == e
 }
@@ -328,9 +328,9 @@ pub fn contains(total: Tokens, target: Tokens) -> Bool {
 
 test tokens_contains_lovelace() {
   let target: Tokens =
-    [Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 100 }]
+    [Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 100 }]
   let total: Tokens =
-    [Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 100 }]
+    [Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 100 }]
   contains(total, target) == True
 }
 
@@ -345,13 +345,13 @@ test tokens_contains_tokens() {
 test tokens_contains_both() {
   let target: Tokens =
     [
-      Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 10 },
+      Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 10 },
       Token { pid: #"acab", tkn: #"beef", amt: 2 },
       Token { pid: #"cafe", tkn: #"face", amt: 10 },
     ]
   let total: Tokens =
     [
-      Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 100 },
+      Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 100 },
       Token { pid: #"acab", tkn: #"beef", amt: 20 },
       Token { pid: #"cafe", tkn: #"face", amt: 100 },
     ]
@@ -361,7 +361,7 @@ test tokens_contains_both() {
 
 test tokens_contains_nothing() {
   let target: Tokens =
-    [Token { pid: value.ada_policy_id, tkn: value.ada_asset_name, amt: 100 }]
+    [Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 100 }]
   let total: Tokens =
     [Token { pid: #"acab", tkn: #"beef", amt: 40 }]
   contains(total, target) == False

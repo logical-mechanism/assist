@@ -2,11 +2,11 @@
 //// ensuring their correctness. 
 ////
 
-use aiken/transaction/certificate.{Certificate, DelegateStaking}
-use aiken/transaction/credential.{PoolId}
-use aiken/transaction/governance.{DelegateStake}
-use assist/credentials
 use assist/types/hashes.{ValidatorHash}
+use cardano/certificate.{
+  Certificate, DelegateBlockProduction, DelegateCredential,
+}
+use cardano/credential.{Script, StakePoolId}
 
 /// Creates a credential delegation for changing the location of the stake.
 /// This certificate can be used to check if stake is being delegated to
@@ -17,19 +17,16 @@ use assist/types/hashes.{ValidatorHash}
 /// ```
 pub fn create_credential_delegation(
   sc: ValidatorHash,
-  pool_id: PoolId,
+  pool_id: StakePoolId,
 ) -> Certificate {
-  DelegateStaking(
-    credentials.create_stake_credential(sc),
-    DelegateStake(pool_id),
+  DelegateCredential(
+    Script(sc),
+    DelegateBlockProduction { stake_pool: pool_id },
   )
 }
 
 test simple_credential_delegation() {
   let cred: Certificate =
-    DelegateStaking(
-      credentials.create_stake_credential(#""),
-      DelegateStake(#""),
-    )
+    DelegateCredential(Script(#""), DelegateBlockProduction { stake_pool: #"" })
   create_credential_delegation(#"", #"") == cred
 }

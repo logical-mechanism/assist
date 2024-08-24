@@ -2,16 +2,16 @@
 //// functions are designed to return a boolean value instead of an error.
 ////
 
-use aiken/transaction.{Output, Transaction}
-use aiken/transaction/credential.{Address}
-use aiken/transaction/value.{Value}
 use assist/addresses
 // for testing only
 use assist/tests/fake_tx
 use assist/values
+use cardano/assets.{Value}
+use cardano/credential.{Address}
+use cardano/transaction.{Output, Transaction}
 
 /// Find the first occurrence of an exact output that matches a specific
-/// address and value. If nothing is found then return False.
+/// address and assets. If nothing is found then return False.
 ///
 /// ```aiken
 /// payout.exact(wallet_addr, validating_value, tx.outputs)
@@ -40,14 +40,14 @@ pub fn exact(
 test find_exact_payout() {
   let tx: Transaction = fake_tx.test_tx()
   let addr: Address = addresses.create_address(#"face", #"")
-  let val: Value = value.from_lovelace(40)
+  let val: Value = assets.from_lovelace(40)
   exact(addr, val, tx.outputs) == True
 }
 
 test missing_exact_payout() {
   let tx: Transaction = fake_tx.test_tx()
   let addr: Address = addresses.create_address(#"acab", #"")
-  let val: Value = value.from_lovelace(40)
+  let val: Value = assets.from_lovelace(40)
   exact(addr, val, tx.outputs) == False
 }
 
@@ -81,33 +81,33 @@ pub fn at_least(
 test at_least_payout() {
   let tx: Transaction = fake_tx.test_tx()
   let addr: Address = addresses.create_address(#"acab", #"")
-  let val: Value = value.from_asset(#"acab", #"beef", 40)
+  let val: Value = assets.from_asset(#"acab", #"beef", 40)
   at_least(addr, val, tx.outputs) == True
 }
 
 test find_just_enough_token_payout() {
   let tx: Transaction = fake_tx.test_tx()
   let addr: Address = addresses.create_address(#"acab", #"")
-  let val: Value = value.from_asset(#"acab", #"beef", 20)
+  let val: Value = assets.from_asset(#"acab", #"beef", 20)
   at_least(addr, val, tx.outputs) == True
 }
 
 test missing_token_payout() {
   let tx: Transaction = fake_tx.test_tx()
   let addr: Address = addresses.create_address(#"acab", #"")
-  let val: Value = value.from_asset(#"acab", #"beef", 60)
+  let val: Value = assets.from_asset(#"acab", #"beef", 60)
   at_least(addr, val, tx.outputs) == False
 }
 
 test negative_token_payout() {
   let tx: Transaction = fake_tx.test_tx()
   let addr: Address = addresses.create_address(#"acab", #"")
-  let val: Value = value.from_asset(#"acab", #"beef", -20)
+  let val: Value = assets.from_asset(#"acab", #"beef", -20)
   at_least(addr, val, tx.outputs) == True
 }
 
 /// Find the first occurrence of an output at some address. If nothing is 
-/// found then return False. This function does not search by value.
+/// found then return False. This function does not search by assets.
 ///
 /// ```aiken
 /// payout.cont(that_script_addr, tx.outputs)

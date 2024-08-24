@@ -1,12 +1,12 @@
 //// This module incorporates code for various minting and burning validations.
 ////
 
-use aiken/bytearray
-use aiken/transaction/value.{AssetName, PolicyId}
+use aiken/primitive/bytearray
 use assist/types/cip68
+use cardano/assets.{AssetName, PolicyId}
 
 /// This checks if a specific policy id, token name, and amount exist inside
-/// the flattened exact value. It is searching for an exact match. If found
+/// the flattened exact assets. It is searching for an exact match. If found
 /// then it returns True else False.
 ///
 /// ```aiken
@@ -37,40 +37,40 @@ pub fn exact(
 
 test good_exact_mint() {
   let flat =
-    value.from_asset(#"acab", #"beef", 1)
-      |> value.merge(value.from_asset(#"fade", #"cafe", -1))
-      |> value.flatten()
+    assets.from_asset(#"acab", #"beef", 1)
+      |> assets.merge(assets.from_asset(#"fade", #"cafe", -1))
+      |> assets.flatten()
   exact(flat, #"acab", #"beef", 1) == True
 }
 
 test bad_exact_mint() {
-  let flat = value.from_asset(#"acab", #"beef", 1) |> value.flatten()
+  let flat = assets.from_asset(#"acab", #"beef", 1) |> assets.flatten()
   exact(flat, #"acab", #"face", 1) == False
 }
 
 test good_exact_burn() {
   let flat =
-    value.from_asset(#"acab", #"beef", 1)
-      |> value.merge(value.from_asset(#"fade", #"cafe", -1))
-      |> value.flatten()
+    assets.from_asset(#"acab", #"beef", 1)
+      |> assets.merge(assets.from_asset(#"fade", #"cafe", -1))
+      |> assets.flatten()
   exact(flat, #"fade", #"cafe", -1) == True
 }
 
 test bad_exact_burn() {
   let flat =
-    value.from_asset(#"acab", #"beef", 1)
-      |> value.merge(value.from_asset(#"fade", #"cafe", -1))
-      |> value.flatten()
+    assets.from_asset(#"acab", #"beef", 1)
+      |> assets.merge(assets.from_asset(#"fade", #"cafe", -1))
+      |> assets.flatten()
   exact(flat, #"acab", #"beef", -1) == False
 }
 
 test empty_exact_mint() {
-  let flat = value.zero() |> value.flatten()
+  let flat = assets.zero() |> assets.flatten()
   exact(flat, #"", #"", 0) == False
 }
 
 /// This checks if a specific policy id, prefix, and amount exist inside
-/// the flattened exact value. Instead of searching for exact match, it
+/// the flattened exact assets. Instead of searching for exact match, it
 /// checks if the token name has the correct prefix. This works if
 /// every token name on the policy id is unique. If found then it returns
 /// True else False.
@@ -105,27 +105,29 @@ pub fn by_prefix(
 }
 
 test good_by_prefix_mint() {
-  let flat = value.from_asset(#"acab", cip68.prefix_222, 1) |> value.flatten()
+  let flat = assets.from_asset(#"acab", cip68.prefix_222, 1) |> assets.flatten()
   by_prefix(flat, #"acab", cip68.prefix_222, 1) == True
 }
 
 test good_by_prefix_burn() {
-  let flat = value.from_asset(#"acab", cip68.prefix_222, -1) |> value.flatten()
+  let flat =
+    assets.from_asset(#"acab", cip68.prefix_222, -1) |> assets.flatten()
   by_prefix(flat, #"acab", cip68.prefix_222, -1) == True
 }
 
 test bad_by_prefix_mint() {
-  let flat = value.from_asset(#"acab", cip68.prefix_333, 1) |> value.flatten()
+  let flat = assets.from_asset(#"acab", cip68.prefix_333, 1) |> assets.flatten()
   by_prefix(flat, #"acab", cip68.prefix_222, 1) == False
 }
 
 test bad_by_prefix_burn() {
-  let flat = value.from_asset(#"acab", cip68.prefix_333, -1) |> value.flatten()
+  let flat =
+    assets.from_asset(#"acab", cip68.prefix_333, -1) |> assets.flatten()
   by_prefix(flat, #"acab", cip68.prefix_222, -1) == False
 }
 
 test empty_by_prefix_mint() {
-  let flat = value.zero() |> value.flatten()
+  let flat = assets.zero() |> assets.flatten()
   by_prefix(flat, #"", #"", 0) == False
 }
 
@@ -166,11 +168,11 @@ test tx_is_empty_minting() {
 }
 
 test tx_is_minting() {
-  let flat = value.from_asset(#"acab", cip68.prefix_222, 1) |> value.flatten()
+  let flat = assets.from_asset(#"acab", cip68.prefix_222, 1) |> assets.flatten()
   is_occurring(flat, #"acab", cip68.prefix_222) == True
 }
 
 test tx_is_not_minting() {
-  let flat = value.from_asset(#"acab", cip68.prefix_222, 1) |> value.flatten()
+  let flat = assets.from_asset(#"acab", cip68.prefix_222, 1) |> assets.flatten()
   is_occurring(flat, #"acab", cip68.prefix_333) == False
 }

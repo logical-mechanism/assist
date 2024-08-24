@@ -3,11 +3,11 @@
 ////
 
 use aiken/builtin
-use aiken/dict.{Dict}
+use aiken/collection/dict.{Dict}
 use aiken/hash.{Blake2b_256, Hash}
-use aiken/transaction.{DatumHash, InlineDatum, Input, Output}
 // for testing only
 use assist/tests/fake_tx
+use cardano/transaction.{DatumHash, InlineDatum, Input, Output}
 
 /// Find the datum data on an input or error. The data is assumed
 /// to be an inline datum.

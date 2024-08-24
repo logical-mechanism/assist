@@ -1,9 +1,9 @@
 //// This module incorporates code for various mathematical operations.
 ////
 
-use aiken/bytearray
-use aiken/list
+use aiken/collection/list
 use aiken/math
+use aiken/primitive/bytearray
 
 /// A large prime number. The value is near 4 x 10^114.
 pub const large_prime: Int =

@@ -2,13 +2,13 @@
 //// checks and comparisons.
 ////
 
-use aiken/list
-use aiken/transaction.{Input, OutputReference}
-use aiken/transaction/credential
-use aiken/transaction/value.{AssetName, PolicyId}
+use aiken/collection/list
 use assist/std
 use assist/tests/fake_tx
 use assist/types/hashes.{ValidatorHash}
+use cardano/assets.{AssetName, PolicyId}
+use cardano/credential
+use cardano/transaction.{Input, OutputReference}
 
 /// Check if a specific input by output reference is being spent. This is useful
 /// when a minting script requires a utxo to be spent but doesn't need any specific
@@ -111,7 +111,7 @@ fn do_total_token_amount(
 ) -> Int {
   when inputs is {
     [input, ..rest] -> {
-      let amt: Int = value.quantity_of(input.output.value, pid, tkn)
+      let amt: Int = assets.quantity_of(input.output.value, pid, tkn)
       do_total_token_amount(rest, pid, tkn, counter + amt)
     }
     [] -> counter

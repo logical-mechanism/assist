@@ -5,12 +5,10 @@
 //// just generate Address types assuming valid key lengths.
 ////
 
-use aiken/bytearray
-use aiken/transaction/credential.{
-  Address, Inline, ScriptCredential, VerificationKeyCredential,
-}
+use aiken/primitive/bytearray
 use assist/types/hashes.{PublicKeyHash, ValidatorHash}
 use assist/types/wallet.{Wallet}
+use cardano/credential.{Address, Inline, Script, VerificationKey}
 
 /// Creates an address from the Wallet type. This should be used primairly for
 /// creating an address as the Wallet type has a `is_valid` function that should
@@ -46,7 +44,7 @@ pub fn create_address(pkh: PublicKeyHash, sc: PublicKeyHash) -> Address {
 test enterprise_wallet() {
   let addr: Address =
     Address {
-      payment_credential: VerificationKeyCredential(#"acab"),
+      payment_credential: VerificationKey(#"acab"),
       stake_credential: None,
     }
   create_address(#"acab", #"") == addr
@@ -55,8 +53,8 @@ test enterprise_wallet() {
 test base_wallet() {
   let addr: Address =
     Address {
-      payment_credential: VerificationKeyCredential(#"acab"),
-      stake_credential: Some(Inline(VerificationKeyCredential(#"face"))),
+      payment_credential: VerificationKey(#"acab"),
+      stake_credential: Some(Inline(VerificationKey(#"face"))),
     }
   create_address(#"acab", #"face") == addr
 }
@@ -64,8 +62,8 @@ test base_wallet() {
 test correct_wallet_sc() {
   let addr: Address =
     Address {
-      payment_credential: VerificationKeyCredential(#"acab"),
-      stake_credential: Some(Inline(VerificationKeyCredential(#""))),
+      payment_credential: VerificationKey(#"acab"),
+      stake_credential: Some(Inline(VerificationKey(#""))),
     }
   create_script_address(#"acab", #"") != addr
 }
@@ -92,18 +90,15 @@ pub fn create_script_address(vkh: ValidatorHash, sc: ValidatorHash) -> Address {
 
 test enterprise_script() {
   let script_addr: Address =
-    Address {
-      payment_credential: ScriptCredential(#"acab"),
-      stake_credential: None,
-    }
+    Address { payment_credential: Script(#"acab"), stake_credential: None }
   create_script_address(#"acab", #"") == script_addr
 }
 
 test base_script() {
   let script_addr: Address =
     Address {
-      payment_credential: ScriptCredential(#"acab"),
-      stake_credential: Some(Inline(ScriptCredential(#"face"))),
+      payment_credential: Script(#"acab"),
+      stake_credential: Some(Inline(Script(#"face"))),
     }
   create_script_address(#"acab", #"face") == script_addr
 }
@@ -111,8 +106,8 @@ test base_script() {
 test correct_script_sc() {
   let script_addr: Address =
     Address {
-      payment_credential: ScriptCredential(#"acab"),
-      stake_credential: Some(Inline(ScriptCredential(#""))),
+      payment_credential: Script(#"acab"),
+      stake_credential: Some(Inline(Script(#""))),
     }
   create_script_address(#"acab", #"") != script_addr
 }

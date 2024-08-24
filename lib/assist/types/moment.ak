@@ -1,7 +1,7 @@
 use aiken/interval.{
   Finite, Interval, IntervalBound, NegativeInfinity, PositiveInfinity,
 }
-use aiken/transaction.{ValidityRange}
+use cardano/transaction.{ValidityRange}
 
 /// A finite moment of time represented as simple start and end integers.
 pub type Moment {

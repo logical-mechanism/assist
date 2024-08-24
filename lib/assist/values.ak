@@ -2,15 +2,15 @@
 //// manipulations and comparisons.
 ////
 
-use aiken/bytearray
-use aiken/dict
+use aiken/collection/dict
+use aiken/collection/list
 use aiken/hash
-use aiken/list
-use aiken/string
-use aiken/transaction/value.{AssetName, PolicyId, Value}
+use aiken/primitive/bytearray
+use aiken/primitive/string
 use assist/types/cip68
 use assist/types/hashes.{TxHash}
 use assist/types/token.{Token, Tokens}
+use cardano/assets.{AssetName, PolicyId, Value}
 
 /// Creates a Value type from a token.
 ///
@@ -18,12 +18,12 @@ use assist/types/token.{Token, Tokens}
 /// values.from_token(this_token)
 /// ```
 pub fn from_token(token: Token) -> Value {
-  value.from_asset(token.pid, token.tkn, token.amt)
+  assets.from_asset(token.pid, token.tkn, token.amt)
 }
 
 test token_to_value() {
   let token: Token = Token { pid: #"", tkn: #"", amt: 10 }
-  let expected: Value = value.from_lovelace(10)
+  let expected: Value = assets.from_lovelace(10)
   from_token(token) == expected
 }
 
@@ -33,12 +33,12 @@ test token_to_value() {
 /// values.from_tokens(redeemer.tokens)
 /// ```
 pub fn from_tokens(tokens: Tokens) -> Value {
-  do_from_tokens(value.zero(), tokens)
+  do_from_tokens(assets.zero(), tokens)
 }
 
 test tokens_to_value() {
   let token: Token = Token { pid: #"", tkn: #"", amt: 10 }
-  let expected: Value = value.from_lovelace(20)
+  let expected: Value = assets.from_lovelace(20)
   from_tokens([token, token]) == expected
 }
 
@@ -47,7 +47,7 @@ fn do_from_tokens(val: Value, tokens: Tokens) -> Value {
   when tokens is {
     // take a token and add it to the value
     [tkn, ..tkns] ->
-      val |> value.add(tkn.pid, tkn.tkn, tkn.amt) |> do_from_tokens(tkns)
+      val |> assets.add(tkn.pid, tkn.tkn, tkn.amt) |> do_from_tokens(tkns)
     // all the things are added so return the value
     [] -> val
   }
@@ -80,32 +80,32 @@ fn do_multiply(ans: Tokens, ts: Tokens, n: Int) -> Tokens {
 }
 
 test values_multiply_by_0() {
-  let val: Value = value.from_lovelace(100)
-  let ans: Value = value.zero()
+  let val: Value = assets.from_lovelace(100)
+  let ans: Value = assets.zero()
   multiply(val, 0) == ans
 }
 
 test values_multiply_by_4() {
-  let val: Value = value.from_lovelace(100)
-  let ans: Value = value.from_lovelace(400)
+  let val: Value = assets.from_lovelace(100)
+  let ans: Value = assets.from_lovelace(400)
   multiply(val, 4) == ans
 }
 
 test values_multiply_by_52314523() {
-  let val: Value = value.from_lovelace(2)
-  let ans: Value = value.from_lovelace(104629046)
+  let val: Value = assets.from_lovelace(2)
+  let ans: Value = assets.from_lovelace(104629046)
   multiply(val, 52314523) == ans
 }
 
-/// Prove that the target value is contained inside another value. Each token
-/// inside the target must exist inside the total value. The quantity of each
+/// Prove that the target value is contained inside another assets. Each token
+/// inside the target must exist inside the total assets. The quantity of each
 /// token must be at least the target amount or greater.
 ///
 /// ```aiken
 /// values.contains(total_value, target_value)
 /// ```
 pub fn contains(total: Value, target: Value) -> Bool {
-  let flat: List<(PolicyId, AssetName, Int)> = value.flatten(target)
+  let flat: List<(PolicyId, AssetName, Int)> = assets.flatten(target)
   do_contains(total, flat)
 }
 
@@ -113,7 +113,7 @@ pub fn contains(total: Value, target: Value) -> Bool {
 fn do_contains(total: Value, flat: List<(PolicyId, AssetName, Int)>) -> Bool {
   when flat is {
     [(pid, tkn, amt), ..rest] ->
-      if value.quantity_of(total, pid, tkn) >= amt {
+      if assets.quantity_of(total, pid, tkn) >= amt {
         do_contains(total, rest)
       } else {
         // something is missing
@@ -125,34 +125,34 @@ fn do_contains(total: Value, flat: List<(PolicyId, AssetName, Int)>) -> Bool {
 }
 
 test value_contains_lovelace() {
-  let target: Value = value.from_lovelace(10)
-  let total: Value = value.from_lovelace(100)
+  let target: Value = assets.from_lovelace(10)
+  let total: Value = assets.from_lovelace(100)
   contains(total, target) == True
 }
 
 test value_contains_tokens() {
-  let target: Value = value.from_asset(#"acab", #"beef", 10)
-  let total: Value = value.from_asset(#"acab", #"beef", 40)
+  let target: Value = assets.from_asset(#"acab", #"beef", 10)
+  let total: Value = assets.from_asset(#"acab", #"beef", 40)
   contains(total, target) == True
 }
 
 test value_contains_both() {
   let target: Value =
-    value.from_lovelace(10)
-      |> value.merge(value.from_asset(#"acab", #"beef", 2))
-      |> value.merge(value.from_asset(#"cafe", #"face", 10))
+    assets.from_lovelace(10)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 2))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 10))
   let total: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 10))
-      |> value.merge(value.from_asset(#"cafe", #"face", 40))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 10))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 40))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   contains(total, target) == True
 }
 
 test value_contains_nothing() {
-  let target: Value = value.from_lovelace(10)
-  let total: Value = value.from_asset(#"acab", #"beef", 40)
+  let target: Value = assets.from_lovelace(10)
+  let total: Value = assets.from_asset(#"acab", #"beef", 40)
   contains(total, target) == False
 }
 
@@ -163,7 +163,7 @@ test value_contains_nothing() {
 /// values.compute_hash(validating_value)
 /// ```
 pub fn compute_hash(target: Value) -> ByteArray {
-  let flat: List<(PolicyId, AssetName, Int)> = value.flatten(target)
+  let flat: List<(PolicyId, AssetName, Int)> = assets.flatten(target)
   do_compute_hash(flat, #"")
 }
 
@@ -195,22 +195,22 @@ fn int_to_hash(num: Int) -> ByteArray {
 }
 
 test hash_empty_value() {
-  let val: Value = value.zero()
+  let val: Value = assets.zero()
   compute_hash(val) == #""
 }
 
 test hash_lovelace_value() {
-  let val: Value = value.from_lovelace(100)
+  let val: Value = assets.from_lovelace(100)
   compute_hash(val) == #"93b41836fbabea4f566ccb5aaa6ba4aa7efc92b4401cce01f4766c8e70225824"
 }
 
 test hash_large_value() {
   let val: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 10))
-      |> value.merge(value.from_asset(#"cafe", #"face", 40))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 10))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 40))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   compute_hash(val) == #"b22cc86ab71b7aba20615b56f07941aacf5445b9089c2d9ec97164a879e1b6b5"
 }
 
@@ -264,7 +264,7 @@ test real_token_name() {
 /// values.prove_nft(this_value, pid)
 /// ```
 pub fn prove_nft(total: Value, pid: PolicyId) {
-  let amts: List<Int> = value.tokens(total, pid) |> dict.values()
+  let amts: List<Int> = assets.tokens(total, pid) |> dict.values()
   let sum: Int = list.foldl(amts, 0, fn(n, total) { n + total })
   and {
     // must have only one asset name
@@ -275,31 +275,31 @@ pub fn prove_nft(total: Value, pid: PolicyId) {
 
 test prove_nft_from_policy_id() {
   let val: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 1))
-      |> value.merge(value.from_asset(#"cafe", #"face", 40))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 1))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 40))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   prove_nft(val, #"acab") == True
 }
 
 test too_many_nfts() {
   let val: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 1))
-      |> value.merge(value.from_asset(#"acab", #"face", 1))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 1))
+      |> assets.merge(assets.from_asset(#"acab", #"face", 1))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   prove_nft(val, #"acab") == False
 }
 
 test missing_nft() {
   let val: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 10))
-      |> value.merge(value.from_asset(#"cafe", #"face", 10))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 10))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 10))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   prove_nft(val, #"acab") == False
 }
 
@@ -318,25 +318,25 @@ pub fn prove_exact_nft(
   nft_tkn: AssetName,
 ) -> Bool {
   // exactly 1 token inside a value
-  value.quantity_of(total_value, nft_pid, nft_tkn) == 1
+  assets.quantity_of(total_value, nft_pid, nft_tkn) == 1
 }
 
 test prove_exact_nft_from_policy_id() {
   let val: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 1))
-      |> value.merge(value.from_asset(#"cafe", #"face", 40))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 1))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 40))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   prove_exact_nft(val, #"acab", #"beef") == True
 }
 
 test missing_exact_nft() {
   let val: Value =
-    value.from_lovelace(100)
-      |> value.merge(value.from_asset(#"acab", #"beef", 10))
-      |> value.merge(value.from_asset(#"cafe", #"face", 10))
-      |> value.merge(value.from_asset(#"beef", #"face", 40))
-      |> value.merge(value.from_asset(#"face", #"beef", 40))
+    assets.from_lovelace(100)
+      |> assets.merge(assets.from_asset(#"acab", #"beef", 10))
+      |> assets.merge(assets.from_asset(#"cafe", #"face", 10))
+      |> assets.merge(assets.from_asset(#"beef", #"face", 40))
+      |> assets.merge(assets.from_asset(#"face", #"beef", 40))
   prove_exact_nft(val, #"acab", #"beef") == False
 }
