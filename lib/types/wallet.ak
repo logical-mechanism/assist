@@ -58,7 +58,7 @@ test multiple_to_vks() {
 /// wallet.is_valid(datum.wallet)
 /// ```
 pub fn is_valid(wallet: Wallet) -> Bool {
-  if and {
+  and {
     // if pkh is 28 then true else false
     bytearray.length(wallet.pkh) == 28,
     // sc is either empty or 28
@@ -66,12 +66,6 @@ pub fn is_valid(wallet: Wallet) -> Bool {
       bytearray.is_empty(wallet.sc),
       bytearray.length(wallet.sc) == 28,
     },
-  } {
-    // wallet is valid
-    True
-  } else {
-    // wallet is not valid
-    False
   }
 }
 

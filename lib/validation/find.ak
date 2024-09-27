@@ -36,8 +36,7 @@ test find_first_input_index() {
 }
 
 test cant_find_first_input_index() fail {
-  let inputs: List<Input> =
-    []
+  let inputs: List<Input> = []
   // this will fail
   first_input_index(inputs) == 0
 }
@@ -62,8 +61,7 @@ test find_first_input_txid() {
 }
 
 test cant_find_first_input_txid() fail {
-  let inputs: List<Input> =
-    []
+  let inputs: List<Input> = []
   // this will fail
   first_input_txid(inputs) == #"acab"
 }
@@ -95,8 +93,7 @@ test find_input_by_ref() {
 }
 
 test cant_find_input_by_ref() fail {
-  let inputs: List<Input> =
-    []
+  let inputs: List<Input> = []
   let out_ref: OutputReference =
     OutputReference { transaction_id: #"acab", output_index: 0 }
   // this will fail
@@ -129,8 +126,7 @@ test find_input_by_addr() {
 }
 
 test cant_find_input_by_addr() fail {
-  let inputs: List<Input> =
-    []
+  let inputs: List<Input> = []
   let addr: Address = addresses.create_address(#"acab", #"")
   // this will fail
   input_by_addr(inputs, addr) == fake_tx.test_input()
@@ -161,8 +157,7 @@ test find_output_by_addr() {
 }
 
 test cant_find_output_by_addr() fail {
-  let outputs: List<Output> =
-    []
+  let outputs: List<Output> = []
   let addr: Address = addresses.create_address(#"acab", #"")
   // this will fail
   output_by_addr(outputs, addr) == fake_tx.test_output()
@@ -193,8 +188,7 @@ test find_first_output_datum() {
 }
 
 test cant_find_first_output_datum() fail {
-  let outputs: List<Output> =
-    []
+  let outputs: List<Output> = []
   expect datum: ByteArray = first_output_datum(outputs)
   // this will fail
   datum == fake_tx.test_datum
@@ -219,8 +213,7 @@ test find_output_datum_by_addr() {
 }
 
 test cant_find_output_datum_by_addr() fail {
-  let outputs: List<Output> =
-    []
+  let outputs: List<Output> = []
   let addr: Address = addresses.create_address(#"acab", #"")
   expect datum: ByteArray = output_datum_by_addr(outputs, addr)
   // this will fail
@@ -269,8 +262,7 @@ test find_just_enough_output_by_addr_value() {
 }
 
 test cant_find_output_by_addr_value() fail {
-  let outputs: List<Output> =
-    []
+  let outputs: List<Output> = []
   let addr: Address = addresses.create_address(#"acab", #"")
   let value: Value = assets.from_asset(#"acab", #"beef", 40)
   // this will fail
@@ -304,8 +296,7 @@ test find_output_by_value() {
 }
 
 test cant_find_output_by_value() fail {
-  let outputs: List<Output> =
-    []
+  let outputs: List<Output> = []
   let value: Value = assets.from_asset(#"acab", #"beef", 10)
   // this will fail
   output_by_value(outputs, value) == fake_tx.test_output()
@@ -334,8 +325,7 @@ test find_stake_reward_by_sc() {
 }
 
 test cant_find_stake_reward_by_sc() fail {
-  let withdrawal: Pairs<Credential, Int> =
-    []
+  let withdrawal: Pairs<Credential, Int> = []
   stake_reward_by_sc(withdrawal, Script(#"face")) == 0
 }
 

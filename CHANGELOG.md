@@ -8,6 +8,7 @@
 - Updated aiken to v1.1.2 and stdlib to v2.1.0
 - Added the registry type and related function
 - stdlib 2.1.0 forces blake2b_224 upon us, this may change in the future
+- If applicable stdlib list functions are used unless its faster to avoid them
 
 # v0.5.0
 

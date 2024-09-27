@@ -67,28 +67,19 @@ fn fiat_shamir_heuristic(
   b: ByteArray,
 ) -> ByteArray {
   // concat g_b, g_r_b, u_b, and b together then hash the result using the 
-  // blake2b_256 hash function as it is the cheapest on chain
-  // as of right now 2.1.0 stdlib we are forced to use blake2b_224
+  // we are forced to use blake2b_224
   g_b
     |> bytearray.concat(g_r_b)
     |> bytearray.concat(u_b)
     |> bytearray.concat(b)
     |> crypto.blake2b_224()
-  // |> crypto.blake2b_256()
 }
 
 test empty_fiat_shamir_transform() {
-  // fiat_shamir_heuristic(#"", #"", #"", #"") == #"0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8"
   fiat_shamir_heuristic(#"", #"", #"", #"") == #"836cc68931c2e4e3e838602eca1902591d216837bafddfe6f0c8cb07"
 }
 
 test real_fiat_shamir_transform() {
-  // fiat_shamir_heuristic(
-  //   #"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb",
-  //   #"81b223cea171a87feba9b7749a2df7601c5a75ae01155fadc124a2ac49099a514cf1e7d9cdc769dceab14a95bd6cb0bd",
-  //   #"a09d99e02f7200526dc55ef722cc171e7aa14fc732614c02ac58d59d7026a7eb18d8798f6928ea2b513f3a4feb0c94d1",
-  //   #"acab",
-  // ) == #"8f9409d05727322c9f2d1d0adf817b8d0e3a681977edc9ab866879a4a4f8f5b9"
   fiat_shamir_heuristic(
     #"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb",
     #"81b223cea171a87feba9b7749a2df7601c5a75ae01155fadc124a2ac49099a514cf1e7d9cdc769dceab14a95bd6cb0bd",

@@ -40,19 +40,10 @@ test its_negative() {
 /// token.negate(these_tokens)
 /// ```
 pub fn negate(tokens: Tokens) -> Tokens {
-  do_negate([], tokens)
-}
-
-fn do_negate(negated: Tokens, tokens: Tokens) -> Tokens {
-  when tokens is {
-    // take a token and add it to the value
-    [tkn, ..tkns] ->
-      negated
-        |> list.push(Token { pid: tkn.pid, tkn: tkn.tkn, amt: -tkn.amt })
-        |> do_negate(tkns)
-    // everything is negative
-    [] -> negated
-  }
+  list.map(
+    tokens,
+    fn(tkn) { Token { pid: tkn.pid, tkn: tkn.tkn, amt: -tkn.amt } },
+  )
 }
 
 test all_tokens_negated() {
@@ -110,18 +101,7 @@ test multiply_by_two() {
 /// token.subtraction_only(redeemer.tokens)
 /// ```
 pub fn subtraction_only(tokens: Tokens) -> Bool {
-  when tokens is {
-    // take a token and add it to the value
-    [tkn, ..tkns] ->
-      if tkn.amt < 0 {
-        subtraction_only(tkns)
-      } else {
-        // something is greater than or equal to zero
-        False
-      }
-    // everything is negative
-    [] -> True
-  }
+  list.all(tokens, fn(tkn) { tkn.amt < 0 })
 }
 
 test everything_is_negative() {
@@ -141,18 +121,7 @@ test everything_is_negative_but_one() {
 /// token.addition_only(redeemer.tokens)
 /// ```
 pub fn addition_only(tokens: Tokens) -> Bool {
-  when tokens is {
-    // take a token and add it to the value
-    [tkn, ..tkns] ->
-      if tkn.amt > 0 {
-        addition_only(tkns)
-      } else {
-        // something is less than or equal to zero
-        False
-      }
-    // everything is positive
-    [] -> True
-  }
+  list.all(tokens, fn(tkn) { tkn.amt > 0 })
 }
 
 test empty_tokens_is_positive() {
@@ -213,13 +182,7 @@ test add_and_subtract_token_to_value() {
 /// add_tokens_to_value(redeemer.tokens, this_value)
 /// ```
 pub fn add_tokens_to_value(the_value: Value, tokens: Tokens) -> Value {
-  when tokens is {
-    // take a token and add it to the value
-    [tkn, ..rest] ->
-      add_token_to_value(the_value, tkn) |> add_tokens_to_value(rest)
-    // return the value
-    [] -> the_value
-  }
+  list.foldl(tokens, the_value, fn(tkn, v) { add_token_to_value(v, tkn) })
 }
 
 test add_empty_tokens_to_value() {
@@ -263,8 +226,7 @@ pub fn from_value(v: Value) -> Tokens {
 
 test from_zero_value() {
   let v: Value = assets.zero
-  let e: Tokens =
-    []
+  let e: Tokens = []
   from_value(v) == e
 }
 
@@ -292,19 +254,16 @@ test from_general_value() {
 /// token.exists(total_tokens, target_token )
 /// ```
 pub fn exists(total: Tokens, target: Token) -> Bool {
-  when total is {
-    [] -> False
-    [tkn, ..tkns] ->
-      if and {
+  list.any(
+    total,
+    fn(tkn) {
+      and {
         target.pid == tkn.pid,
         target.tkn == tkn.tkn,
         tkn.amt >= target.amt,
-      } {
-        True
-      } else {
-        exists(tkns, target)
       }
-  }
+    },
+  )
 }
 
 /// Check if a target list of tokens exist inside another list of tokens.
@@ -315,15 +274,7 @@ pub fn exists(total: Tokens, target: Token) -> Bool {
 /// token.contains(total, target)
 /// ```
 pub fn contains(total: Tokens, target: Tokens) -> Bool {
-  when target is {
-    [] -> True
-    [t, ..ts] ->
-      if exists(total, t) {
-        contains(total, ts)
-      } else {
-        False
-      }
-  }
+  list.all(target, fn(t) { exists(total, t) })
 }
 
 test tokens_contains_lovelace() {
@@ -335,10 +286,8 @@ test tokens_contains_lovelace() {
 }
 
 test tokens_contains_tokens() {
-  let target: Tokens =
-    [Token { pid: #"acab", tkn: #"beef", amt: 10 }]
-  let total: Tokens =
-    [Token { pid: #"acab", tkn: #"beef", amt: 40 }]
+  let target: Tokens = [Token { pid: #"acab", tkn: #"beef", amt: 10 }]
+  let total: Tokens = [Token { pid: #"acab", tkn: #"beef", amt: 40 }]
   contains(total, target) == True
 }
 
@@ -362,7 +311,6 @@ test tokens_contains_both() {
 test tokens_contains_nothing() {
   let target: Tokens =
     [Token { pid: assets.ada_policy_id, tkn: assets.ada_asset_name, amt: 100 }]
-  let total: Tokens =
-    [Token { pid: #"acab", tkn: #"beef", amt: 40 }]
+  let total: Tokens = [Token { pid: #"acab", tkn: #"beef", amt: 40 }]
   contains(total, target) == False
 }
